@@ -74,7 +74,7 @@ void printPatientData() { // fonction pour afficher la fiche patient
     server.send(500, "text/html", "<h3>Erreur: Aucune donnée patient trouvée.</h3>");
   }
 }
-void saveECGData(int EcgValue) {
+/*void saveECGData(int EcgValue) {
   File file = SPIFFS.open("/cycle_ecg.txt", FILE_APPEND); // Ouvrir en mode append pour ajouter des données sans écraser les anciennes
   if (file) {
     file.println(EcgValue); // Ajouter la valeur de l'ECG
@@ -97,7 +97,7 @@ void showECGData() {
 } else {
     server.send(500, "text/html", "<h3>Erreur lors de la lecture des données ECG.</h3>");
   }
-}
+}*/
 void setup() {
 
   Serial.begin(115200);
@@ -107,7 +107,7 @@ void setup() {
     Serial.println("Erreur d'initialisation de SPIFFS !");
     return;
 }
-  WiFi.begin(ssid, password);
+  WiFi.softAP(ssid, password);
   if (!WiFi.softAPConfig(local_IP, gateway, subnet)) {
       Serial.println("⚠️ Échec de la configuration de l'IP !");
   }
@@ -124,13 +124,16 @@ void setup() {
   Serial.print("🌐 Accédez à l'ESP32 via : ");
   Serial.println(WiFi.softAPIP());
 
-    // Démarrer le serveur Web
-  server.on("/", []() { server.send(200, "text/html", "<h1>Bienvenue sur ESP32</h1>"); });
+  // Définir les routes du serveur
+  server.on("/", []() { server.send(200, "text/html", formulairePatient); });
+  server.on("/enregistrer", HTTP_POST, handleForm);   // Route pour enregistrer les données
+  server.on("/print", HTTP_GET, printPatientData);    // Route pour afficher la fiche patient;
   server.begin();
 
 }
 void loop() {
   
   server.handleClient();
-
+  Serial.println("En attente d'une connexion...");
+  delay(1000);
 }
