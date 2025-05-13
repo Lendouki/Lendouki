@@ -86,16 +86,16 @@ String formulairePatient = R"(
     <h2>Fiche Patient ECG</h2>
     <form action="/enregistrer" method="POST">
       <label for="nom">Nom:</label><br>
-      <input type="text" name="nom" required><br>
+      <input type="text" name="nom" pattern="[A-Za-zÀ-ÿ\s]+" title="Lettres uniquement" required><br>
 
       <label for="telephone">Numéro de téléphone:</label><br>
-      <input type="text" name="telephone" required><br>
+      <input type="text" name="telephone" pattern="\d{10}" title="10 chiffres requis" required><br>
 
       <label for="numSecu">Numéro de sécurité sociale:</label><br>
-      <input type="text" name="numSecu" required><br>
+      <input type="text" name="numSecu" pattern="\d{15}" title="15 chiffres requis" required><br>
 
       <label for="gs">Groupe sanguin:</label><br>
-      <input type="text" name="gs" required><br><br>
+      <input type="text" name="gs" pattern="^(A|B|AB|O)[+-]$" title="Ex: A+, AB-, O+" required><br><br>
 
       <input type="submit" value="Enregistrer">
     </form>
@@ -391,16 +391,16 @@ String pageModificationPatient = R"rawliteral(
     <!-- Champs pour modifier uniquement les informations du patient -->
     
     <label for="nom">Nom:</label><br>
-    <input type="text" name="nom" value="%nom%" required><br>
+    <input type="text" name="nom" pattern="[A-Za-zÀ-ÿ\s]+" title="Lettres uniquement" value="%nom%" required><br>
 
     <label for="telephone">Numéro de téléphone:</label><br>
-    <input type="text" name="telephone" value="%telephone%"><br>
+    <input type="text" name="telephone" pattern="\d{10}" title="10 chiffres requis" value="%telephone%" required><br>
 
     <label for="numSecu">Numéro de sécurité sociale:</label><br>
-    <input type="text" name="numSecu" value="%numSecu%" required><br>
+    <input type="text" name="numSecu" pattern="\d{15}" title="15 chiffres requis" value="%numSecu%" required><br>
 
     <label for="gs">Groupe sanguin:</label><br>
-    <input type="text" name="gs" value="%gs%" required><br><br>
+    <input type="text" name="gs" pattern="^(A|B|AB|O)[+-]$" title="Ex: A+, AB-, O+" value="%gs%" required><br><br>
 
     <!-- Bouton pour envoyer les modifications -->
     <input type="submit" value="Enregistrer les Modifications">
