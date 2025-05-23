@@ -11,8 +11,8 @@ IPAddress subnet(255, 255, 255, 0); // Masque de sous-réseau
 
 WebServer server(80);
 
-const char* login = "";     // Identifiant de l'administrateur
-const char* mdp = "";       // Mot de passe de l'administrateur
+const char* login = "Admin";     // Identifiant de l'administrateur
+const char* mdp = "1234";       // Mot de passe de l'administrateur
 
 bool estAuthentifie() {
   return server.authenticate(login, password);
@@ -811,40 +811,56 @@ void setup() {
   Serial.println(WiFi.softAPIP());
 
   // Route pour affciher la page d'accueil 
-  
   server.on("/", HTTP_GET, []() {
     server.send(200, "text/html", formulairePatient);
 });
+
+// Route pour afficher l'historique
   server.on("/historique", HTTP_GET, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       afficherHistorique();
 });
+
+// Route pour supprimer l'historique complet
   server.on("/supprimer_historique_complet", HTTP_GET, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       supprimerHistorique();
 });
+
+// Route pour supprimer un patient
   server.on("/supprimer_patient", HTTP_GET, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       supprimerPatient();
 });
+
+// Route pour enregistrer les patients
   server.on("/enregistrer", HTTP_POST, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       enregistrement();
 });
+
+// Route pour modifier un patient
   server.on("/modifier_patient", HTTP_ANY, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       modifierPatient();
 });
+
+// Route pour afficher la page de recherche de patients
   server.on("/rechercher_patient", HTTP_GET, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       server.send(200, "text/html", pageRecherchePatient);
 });
+
+// Route pour afficher les conditions d'utilisations
   server.on("/conditions", HTTP_GET, afficherConditions);
 
+// Route pour afficher la page d'impressions
   server.on("/imprimer", HTTP_GET, []() {
     if (!estAuthentifie()) return server.requestAuthentication();
       printPatientData();
 });
+ 
+    // Initialisation du serveur
   server.begin();
 }
 void loop() {
