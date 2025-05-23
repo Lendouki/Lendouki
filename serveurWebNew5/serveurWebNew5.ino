@@ -11,6 +11,13 @@ IPAddress subnet(255, 255, 255, 0); // Masque de sous-réseau
 
 WebServer server(80);
 
+const char* login = "";     // Identifiant de l'administrateur
+const char* mdp = "";       // Mot de passe de l'administrateur
+
+bool estAuthentifie() {
+  return server.authenticate(login, password);
+}
+
 String formulairePatient = R"(
 <!DOCTYPE html>
 <html>
@@ -86,16 +93,16 @@ String formulairePatient = R"(
     <h2>Fiche Patient ECG</h2>
     <form action="/enregistrer" method="POST">
       <label for="nom">Nom:</label><br>
-      <input type="text" name="nom" required><br>
+      <input type="text" name="nom" pattern="[A-Za-zÀ-ÿ\s]+" title="Lettres uniquement" required><br>
 
       <label for="telephone">Numéro de téléphone:</label><br>
-      <input type="text" name="telephone" required><br>
+      <input type="text" name="telephone" pattern="\d{10}" title="10 chiffres requis" required><br>
 
       <label for="numSecu">Numéro de sécurité sociale:</label><br>
-      <input type="text" name="numSecu" required><br>
+      <input type="text" name="numSecu" pattern="\d{15}" title="15 chiffres requis" required><br>
 
       <label for="gs">Groupe sanguin:</label><br>
-      <input type="text" name="gs" required><br><br>
+      <input type="text" name="gs" pattern="^(A|B|AB|O)[+-]$" title="Ex: A+, AB-, O+" required><br><br>
 
       <input type="submit" value="Enregistrer">
     </form>
@@ -112,9 +119,11 @@ String formulairePatient = R"(
   <a href='/rechercher_patient'><button>Modifier les Informations</button></a>
 </div>
 <br>
+
 <div class="button-container">
   <a href='/conditions'><button>Conditions d'Utilisation</button></a>
 </div>
+
 </div>
 </body>
 </html>
@@ -167,56 +176,52 @@ String conditionsUtilisation = R"(
 </head>
 <body>
   <div class="container">
-    <h1>Conditions d'Utilisation</h1>
-    <p>Merci de lire attentivement ces conditions d'utilisation avant d'utiliser ce système de collecte de données ECG.</p>
+  <h1>Conditions d'Utilisation et Politique de Confidentialité</h1>
+  <p>Merci de lire attentivement ces conditions avant d'utiliser ce système de collecte de données ECG.</p>
 
-    <h2>1. Objet du service</h2>
-    <p>Ce service permet la saisie, la sauvegarde et l'analyse de données ECG (électrocardiogramme) à des fins médicales ou de recherche clinique.</p>
+  <h2>1. Objet du service</h2>
+  <p>Ce dispositif permet la saisie, le traitement et la sauvegarde de données ECG (électrocardiogramme) à des fins de suivi médical ou de recherche clinique. Il ne remplace pas un avis médical professionnel.</p>
 
-    <h2>2. Données collectées</h2>
-    <p>Les données suivantes peuvent être collectées :</p>
-    <ul>
-      <li>Nom</li>
-      <li>Numéro de sécurité sociale</li>
-      <li>Groupe sanguin</li>
-      <li>Données ECG enregistrées</li>
-    </ul>
+  <h2>2. Données collectées</h2>
+  <p>Dans le cadre de son fonctionnement, le système peut collecter les données suivantes :</p>
+  <ul>
+    <li>Données ECG (signaux électriques du cœur)</li>
+    <li>Nom</li>
+    <li>Numéro de téléphone </li>
+    <li>Numéro de sécurité sociale</li>
+    <li>Groupe sanguin</li>
 
-    <h2>3. Consentement</h2>
-    <p>En utilisant ce système, vous consentez expressément à la collecte et au traitement des données à caractère personnel nécessaires au bon fonctionnement du service.</p>
+  </ul>
 
-    <h2>4. Protection des données (RGPD)</h2>
-    <p>Conformément au RGPD (Règlement UE 2016/679), les données collectées sont :</p>
-    <ul>
-      <li><strong>Limitées</strong> à ce qui est strictement nécessaire (minimisation des données).</li>
-      <li><strong>Sécurisées</strong> via des protocoles de chiffrement et un accès restreint.</li>
-      <li><strong>Stockées localement</strong> sur l'ESP32 et ne sont pas partagées sans votre accord.</li>
-      <li><strong>Non conservées indéfiniment</strong> : l'utilisateur peut supprimer ses données à tout moment via une interface dédiée.</li>
-      <li><strong>Accessibles sur demande</strong> : toute personne peut demander la consultation, la modification ou la suppression de ses données.</li>
-    </ul>
+  <h2>4. Protection des données (RGPD)</h2>
+  <p>Conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679), les données collectées respectent les principes suivants :</p>
+  <ul>
+    <li><strong>Licéité, loyauté et transparence :</strong> les données sont traitées de manière claire, avec le consentement de la personne concernée.</li>
+    <li><strong>Minimisation :</strong> seules les données strictement nécessaires sont collectées.</li>
+    <li><strong>Sécurité :</strong> les données sont stockées localement (sur l’ESP32) et protégées par des protocoles de chiffrement et des accès restreints.</li>
+    <li><strong>Durée de conservation limitée :</strong> les données peuvent être effacées par l’utilisateur via une interface dédiée.</li>
+    <li><strong>Droits des utilisateurs :</strong> l'utilisateur peut accéder, modifier ou supprimer ses données à tout moment.</li>
+  </ul>
 
-    <h2>5. Droits de l'utilisateur</h2>
-    <p>Vous disposez des droits suivants :</p>
-    <ul>
-      <li>Droit d'accès à vos données</li>
-      <li>Droit de rectification</li>
-      <li>Droit à l'effacement (« droit à l'oubli »)</li>
-      <li>Droit à la portabilité</li>
-      <li>Droit d'opposition</li>
-    </ul>
-    <p>Pour exercer ces droits, veuillez contacter le responsable du traitement des données, via l'adresse indiquée par l'opérateur de ce dispositif.</p>
+  <h2>5. Vos droits</h2>
+  <p>Conformément à la réglementation, vous disposez des droits suivants sur vos données personnelles :</p>
+  <ul>
+    <li>Droit d'accès</li>
+    <li>Droit de rectification</li>
+    <li>Droit à l'effacement (« droit à l’oubli »)</li>
+    <li>Droit à la portabilité</li>
+    <li>Droit d’opposition</li>
+  </ul>
 
-    <h2>6. Limitation de responsabilité</h2>
-    <p>Ce système est fourni à des fins expérimentales ou de suivi médical et ne saurait remplacer un diagnostic médical professionnel.</p>
+  <h2>6. Responsabilité</h2>
+  <p>Ce système est fourni à titre expérimental ou comme support de suivi. Il ne remplace en aucun cas un diagnostic ou un avis médical professionnel.</p>
 
-    <div class="footer">
-      <a href="/">⬅ Retour à l'accueil</a>
-    </div>
+  <div class="footer">
+    <a href="/">Retour à l'accueil</a>
   </div>
 </body>
 </html>
 )";
-
 String pageRecherchePatient = R"(
 <!DOCTYPE html>
 <html>
@@ -388,21 +393,20 @@ String pageModificationPatient = R"rawliteral(
 <div class="form-container">
   <h2>Modifier les Informations du Patient</h2>
   <form action="/modifier_patient" method="POST">
-    <!-- Champs pour modifier uniquement les informations du patient -->
+    
     
     <label for="nom">Nom:</label><br>
-    <input type="text" name="nom" value="%nom%" required><br>
+    <input type="text" name="nom" pattern="[A-Za-zÀ-ÿ\s]+" title="Lettres uniquement" value="%nom%" required><br>
 
     <label for="telephone">Numéro de téléphone:</label><br>
-    <input type="text" name="telephone" value="%telephone%"><br>
+    <input type="text" name="telephone" pattern="\d{10}" title="10 chiffres requis" value="%telephone%" required><br>
 
     <label for="numSecu">Numéro de sécurité sociale:</label><br>
-    <input type="text" name="numSecu" value="%numSecu%" required><br>
+    <input type="text" name="numSecu" pattern="\d{15}" title="15 chiffres requis" value="%numSecu%" required><br>
 
     <label for="gs">Groupe sanguin:</label><br>
-    <input type="text" name="gs" value="%gs%" required><br><br>
+    <input type="text" name="gs" pattern="^(A|B|AB|O)[+-]$" title="Ex: A+, AB-, O+" value="%gs%" required><br><br>
 
-    <!-- Bouton pour envoyer les modifications -->
     <input type="submit" value="Enregistrer les Modifications">
   </form>
   <br>
@@ -414,17 +418,20 @@ String pageModificationPatient = R"rawliteral(
 </html>
 )rawliteral";
 
+// Affiche les conditions d'utilisation en HTML
 void afficherConditions() {
   server.send(200, "text/html", conditionsUtilisation);
 }
-void handleForm() {
-  if (server.method() == HTTP_POST) {
+// Gère la soumission du formulaire patient
+void enregistrement() { 
+  if (server.method() == HTTP_POST) { 
+    
     String nom = server.arg("nom");
     String telephone = server.arg("telephone");
     String numSecu = server.arg("numSecu");
     String gs = server.arg("gs");
 
-    // Stocker dans la fiche patient dans un fichier texte
+    // Ouverture du fichier pour ajouter les données
     File file = SPIFFS.open("/patient.txt", FILE_WRITE);
     if (file) {
       file.println("Nom: " + nom);
@@ -435,16 +442,17 @@ void handleForm() {
       server.send(200, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3>Données enregistrées!</h3></body></html>");
       
       file.close();
+      // Réponse HTML après enregistrement
       Serial.println("Données enregistrées dans patient.txt");
     }
-    else {
+    else { // Réponse en cas d'erreur d'écriture
       server.send(500, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3>Erreur d'enregistrement ! Vérifier l'accès au système ou le stockage de l'appareil</h3></body></html>");
 
     }
   }
 }
-// Afficher l'historique des patients
-void afficherHistorique() {
+// Affiche l'historique de tous les patients enregistrés
+void afficherHistorique() { // Ouvre le fichier patient en lecture
   File file = SPIFFS.open("/patient.txt", FILE_READ);
   if (file) {
     String reponse = "<html><head><meta charset='UTF-8'><style>";
@@ -492,11 +500,12 @@ void afficherHistorique() {
 // Fonction pour afficher la page de modification d'un patient
 void afficherPageModificationPatient() {
   String reponse = "<html><head><meta charset='UTF-8'>";
+   // Vérifie si un nom a été fourni dans la requête
   if (!server.hasArg("nom")) {
     server.send(400, "text/html", "<h3 style='color:red;text-align:center;'>Nom manquant</h3>");
     return;
   }
-
+  // Récupère le nom fourni et le nettoie
   String nomRecherche = server.arg("nom");
   nomRecherche.trim();
 
@@ -505,10 +514,11 @@ void afficherPageModificationPatient() {
     server.send(500, "text/html", "<h3>Erreur d'accès au fichier</h3>");
     return;
   }
-
+  // Variables pour stocker les données du patient trouvé
   bool patientTrouve = false;
   String ligne, nom = "", telephone = "", secu = "", groupe = "";
 
+  // Lecture ligne par ligne pour trouver le patient correspondant
   while (file.available()) {
     ligne = file.readStringUntil('\n');
     ligne.trim();
@@ -521,7 +531,7 @@ void afficherPageModificationPatient() {
         patientTrouve = true;
         nom = nomLigne;
         
-        // Lire les lignes suivantes
+        // Lire et extraire les informations suivantes du patient
         if (file.available()) {
           ligne = file.readStringUntil('\n');
           ligne.trim();
@@ -546,15 +556,17 @@ void afficherPageModificationPatient() {
           }
         }
         
-        break;
+        break; // Arrête la lecture une fois le patient trouvé
       }
     }
   }
   file.close();
 
+  // Si patient trouvé, on affiche la page de modification avec les champs remplis
   if (patientTrouve) {
     String pageModifiee = pageModificationPatient;
-    // Remplacer les placeholders par les valeurs trouvées
+    
+    // Remplace les champs avec les données récupérées
     pageModifiee.replace("%nom%", nom);
     pageModifiee.replace("%telephone%", telephone);
     pageModifiee.replace("%numSecu%", secu);
@@ -570,60 +582,64 @@ void afficherPageModificationPatient() {
   }
 }
 
-// Modifiez votre fonction modifierPatient() pour utiliser l'ancien nom
+// Fonction pour modifier les données d'un patient existant
 void modifierPatient() {
-  // Vérifier si c'est une requête GET pour la recherche ou POST pour la modification
+ // Si c'est une requête GET, on affiche la page de modification
   if (server.method() == HTTP_GET) {
     afficherPageModificationPatient();
     return;
   }
 
-  // Vérifier si tous les champs nécessaires sont présents
+   // Vérifie que tous les champs requis sont présents dans la requête POST
   if (!server.hasArg("ancien_nom") || !server.hasArg("nom") || !server.hasArg("telephone") || !server.hasArg("numSecu") || !server.hasArg("gs")) {
     server.send(400, "text/html", "<h3 style='color:red;text-align:center;'>Erreur: Données incomplètes pour la modification !</h3>");
     return;
   }
 
+// Récupère les nouvelles données depuis le formulaire
   String ancienNom = server.arg("ancien_nom");
   String nouveauNom = server.arg("nom");
   String telephone = server.arg("telephone");
   String numSecu = server.arg("numSecu");
   String gs = server.arg("gs");
 
+  // Ouvre le fichier des patients en lecture
   File file = SPIFFS.open("/patient.txt", FILE_READ);
-  if (!file) {
+  if (!file) { // Erreur si le fichier ne peut pas être ouvert
     server.send(500, "text/html", "<h3 style='color:red;text-align:center;'>Erreur: Impossible d'accéder au fichier.</h3>");
     return;
   }
-
+// Variables pour créer le nouveau contenu modifié
   String contenuModifie = "";
-  bool patientModifie = false;
-  bool enTrainDeSauter = false;
-  int lignesASauter = 0;
+  bool patientModifie = false;  // Pour savoir si un patient a été trouvé et modifié
+  bool enTrainDeSauter = false; // Pour ignorer les anciennes lignes du patient modifié
+  int lignesASauter = 0;        // Nombre de lignes à ignorer (4 après "Nom: ")
 
+ // Lecture du fichier ligne par ligne
   while (file.available()) {
     String ligne = file.readStringUntil('\n');
-
+    // Si on est en train de sauter les anciennes données du patient, on diminue le compteur
     if (enTrainDeSauter) {
       lignesASauter--;
       if (lignesASauter <= 0) {
-        enTrainDeSauter = false;
+        enTrainDeSauter = false; // Fin des lignes à ignorer
       }
       continue;
     }
-
+    // Si la ligne contient un nom, on vérifie s’il correspond à l’ancien nom
     if (ligne.startsWith("Nom: ")) {
-      String nomLigne = ligne.substring(5);
+      String nomLigne = ligne.substring(5); // Extrait le nom (après "Nom: ")
       nomLigne.trim();
 
       String nomRecherche = ancienNom;
       nomRecherche.trim();
 
+      // Comparaison insensible à la casse
       nomLigne.toLowerCase();
       nomRecherche.toLowerCase();
 
       if (nomLigne == nomRecherche) {
-        // Patient trouvé, on remplace les données
+        // Si le nom correspond, on remplace les anciennes données par les nouvelles
         patientModifie = true;
         contenuModifie += "Nom: " + nouveauNom + "\n";
         contenuModifie += "Téléphone: " + telephone + "\n";
@@ -631,26 +647,27 @@ void modifierPatient() {
         contenuModifie += "Groupe sanguin: " + gs + "\n";
         contenuModifie += "--------------------\n";
 
-        // Sauter les lignes suivantes (infos anciennes + ligne de séparation)
+        // Active le saut des lignes suivantes de l'ancien patient (4 lignes à ignorer)
         enTrainDeSauter = true;
         lignesASauter = 4;
         continue;
       }
     }
-
+    // Si aucun traitement spécial, on garde la ligne telle quelle
     contenuModifie += ligne + "\n";
   }
   file.close();
-
+    // Si le patient a été modifié, on réécrit le fichier avec les nouvelles données
   if (patientModifie) {
     File newFile = SPIFFS.open("/patient.txt", FILE_WRITE);
     if (!newFile) {
       server.send(500, "text/html", "<h3 style='color:red;text-align:center;'>Erreur: Écriture impossible dans le fichier.</h3>");
       return;
     }
-    newFile.print(contenuModifie);
+    newFile.print(contenuModifie); // Écrit le nouveau contenu
     newFile.close();
 
+    // Réponse HTML de confirmation
     String message = "<html><head><meta charset='UTF-8'>";
     message += "<style>body { font-family: Arial, sans-serif; text-align: center; font-size: 24px; background-color: #f4f4f9; }</style></head><body>";
     message += "<div style='max-width: 600px; margin: 50px auto; padding: 20px; background-color: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>";
@@ -661,70 +678,65 @@ void modifierPatient() {
     message += "</div></body></html>";
 
     server.send(200, "text/html; charset=UTF-8", message);
-  } else {
+  } else { // Patient non trouvé
     server.send(404, "text/html; charset=UTF-8", "<h3 style='color:red;text-align:center;'>Patient non trouvé. Veuillez vérifier le nom.</h3>");
   }
 }
 
 // Fonction pour supprimer un patient par son NOM
 void supprimerPatient() {
-  // Vérifier si le nom est bien fourni dans la requête
+  // Vérifie si l'argument "nom" est bien passé dans la requête
   if (!server.hasArg("nom")) {  
     server.send(400, "text/html", "<h3 style='color:red;text-align:center;'>Erreur: Nom du patient manquant !</h3><br><a href='/'> Retour</a>");
     return;
   }
+  // Récupère et nettoie le nom à rechercher
+  String nomASupprimer = server.arg("nom");
+  nomASupprimer.trim();
 
-  String nomASupprimer = server.arg("nom");  // Récupération du nom
-  nomASupprimer.trim(); // évite les espaces
+  // Tente d'ouvrir le fichier patient.txt en lecture et envoie message d'erreur si il n'y arrive pas
   File file = SPIFFS.open("/patient.txt", FILE_READ);
-  
   if (!file) {
     server.send(500, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3 style='color:red;text-align:center;'>Erreur: Impossible d'accéder au fichier.</h3><br><a href='/'>⬅ Retour</a></body></html>");
     return;
-  }
-
+  } 
+  // Variables pour stocker le nouveau contenu du fichier et suivre l’état de la suppression
   String nouveauContenu = "";
   bool patientTrouve = false;
   bool suppressionEnCours = false;
 
-  // Lire chaque ligne du fichier
+  // Lecture du fichier ligne par ligne pour reconstruire un nouveau contenu sans le patient ciblé
   while (file.available()) {
-    String ligne = file.readStringUntil('\n');
-
-    // Si on trouve le nom dans une ligne commençant par "Nom: ", on déclenche la suppression
+    String ligne = file.readStringUntil('\n');  
     if (ligne.startsWith("Nom: ") && ligne.indexOf(nomASupprimer) != -1) {
       suppressionEnCours = true;
       patientTrouve = true;
-      continue;  // Ne pas ajouter cette ligne dans le nouveau fichier
-    }
-
-    // Si on détecte un nouveau patient (nouveau "Nom: "), on arrête la suppression
+      continue;  
+    } 
+     // Dès qu’une nouvelle ligne "Nom: " est rencontrée, arrêter la suppression
     if (suppressionEnCours && ligne.startsWith("Nom: ")) {
       suppressionEnCours = false;
     }
-
-    // Ajouter la ligne dans le fichier SI elle ne fait pas partie du patient à supprimer
+    // Si on n’est pas en train de supprimer, ajouter la ligne au nouveau contenu
     if (!suppressionEnCours) {
       nouveauContenu += ligne + "\n";
     }
-  }
+  } // Ferme le fichier original
   file.close();
 
-  // Réécriture du fichier sans le patient supprimé
+  // Réécrit le fichier patient.txt avec le contenu mis à jour
   File newFile = SPIFFS.open("/patient.txt", FILE_WRITE);
   newFile.print(nouveauContenu);
   newFile.close();
-
-  // Réponse au client
-  if (patientTrouve) {
+  if (patientTrouve) { // Envoie une réponse selon que le patient a été trouvé et supprimé ou non
     server.send(200, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3 style='color:green;text-align:center;'> Patient supprimé avec succès !</h3><br><a href='/'> Retour</a></body></html>");
   } else {
     server.send(404, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3 style='color:red;text-align:center;'> Patient non trouvé !</h3><br><a href='/'> Retour</a></body></html>");
   }
 }
-
-void printPatientData() { // Fonction pour afficher la fiche patient bien formatée
-  File file = SPIFFS.open("/patient.txt", FILE_READ);
+// Fonction pour imprimer les fichiers
+void printPatientData() { 
+  File file = SPIFFS.open("/patient.txt", FILE_READ); // Ouvre le fichier en lecture
   if (file) {
     String reponse = "<html><head><meta charset='UTF-8'>";
     reponse += "<style>";
@@ -741,7 +753,7 @@ void printPatientData() { // Fonction pour afficher la fiche patient bien format
     reponse += "<div class='container'>";
     reponse += "<h2> Fiche Patient</h2>";
     reponse += "<pre>";
-
+    // Lit tout le contenu du fichier
     while (file.available()) {
       reponse += (char)file.read();
     }
@@ -754,7 +766,7 @@ void printPatientData() { // Fonction pour afficher la fiche patient bien format
     reponse += "</div></body></html>";
 
     server.send(200, "text/html; charset=UTF-8", reponse);
-  } else {
+  } else { // Envoie le contenu au client
     server.send(500, "text/html", "<html><head><meta charset='UTF-8'></head><body><h3 style='color:red; text-align:center;'>Erreur: Aucunes données d'un patient n'a été trouvées.</h3></body></html>");
   }
 }
@@ -765,10 +777,8 @@ void supprimerHistorique() {
     server.send(500, "text/html", "<html><head><meta charset='UTF-8'></head><body><h1>Erreur SPIFFS !</h1><p><a href='/'>Retour</a></p></body></html>");
     return;
   }
-
-  // Formatage complet du SPIFFS (Supprime tous les fichiers)
   Serial.println(" Formatage de SPIFFS en cours...");
-  if (SPIFFS.format()) {
+  if (SPIFFS.format()) { // Tente de formater SPIFFS, ce qui efface tous les fichiers
     Serial.println(" SPIFFS formaté avec succès !");
     server.send(200, "text/html", "<html><head><meta charset='UTF-8'></head><body><h1>Historique supprimé avec succès !</h1><p><a href='/'>Retour</a></p></body></html>");
   } else {
@@ -794,43 +804,47 @@ void setup() {
   } else {
     Serial.println(" Configuration de l'IP réussie !");
   }
-
   Serial.println(" Point d'accès WiFi activé !");
   Serial.print(" Connectez-vous au réseau : ");
   Serial.println(ssid);
   Serial.print(" Accédez à l'ESP32 via : ");
   Serial.println(WiFi.softAPIP());
 
-  // Définir les routes du serveur
+  // Route pour affciher la page d'accueil 
+  
   server.on("/", HTTP_GET, []() {
-  server.send(200, "text/html", formulairePatient); // Afficher le formulaire
-  });
-  
-  // Route pour afficher l'historique des patients
-  server.on("/historique", HTTP_GET, afficherHistorique);
-   
-  // Route pour supprimer pour l'historique complet
-  server.on("/supprimer_historique_complet", HTTP_GET, supprimerHistorique);
-  
-  // Route pour supprimer un patient (Action de suppression)
-  server.on("/supprimer_patient", HTTP_GET, supprimerPatient);
-  
-  // Route pour enregistrer un patient
-  server.on("/enregistrer", HTTP_POST, handleForm);
-  
-  
-  // Route pour afficher le formulaire de modification d'un patient
-  server.on("/modifier_patient", HTTP_ANY, modifierPatient);
-  
+    server.send(200, "text/html", formulairePatient);
+});
+  server.on("/historique", HTTP_GET, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      afficherHistorique();
+});
+  server.on("/supprimer_historique_complet", HTTP_GET, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      supprimerHistorique();
+});
+  server.on("/supprimer_patient", HTTP_GET, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      supprimerPatient();
+});
+  server.on("/enregistrer", HTTP_POST, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      enregistrement();
+});
+  server.on("/modifier_patient", HTTP_ANY, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      modifierPatient();
+});
   server.on("/rechercher_patient", HTTP_GET, []() {
-    server.send(200, "text/html", pageRecherchePatient);
-  });
-  // Route pour la page de conditions d'utilisation
-  server.on("/conditions", HTTP_GET, afficherConditions); 
-  
-  // Route pour afficher la fiche du patient (impression)
-  server.on("/imprimer", HTTP_GET, printPatientData);
-  // démarage du serveur web
+    if (!estAuthentifie()) return server.requestAuthentication();
+      server.send(200, "text/html", pageRecherchePatient);
+});
+  server.on("/conditions", HTTP_GET, afficherConditions);
+
+  server.on("/imprimer", HTTP_GET, []() {
+    if (!estAuthentifie()) return server.requestAuthentication();
+      printPatientData();
+});
   server.begin();
 }
 void loop() {
